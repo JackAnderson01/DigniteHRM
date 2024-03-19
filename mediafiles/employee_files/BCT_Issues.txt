@@ -1,0 +1,2 @@
+Subscription in BCT is necessary in the signup procedure. Simra thinks that we need to give 3 or 7 day free trial.
+Once account is created we can't delete the account like in whatsapp.
