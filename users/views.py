@@ -288,9 +288,9 @@ class ChangePasswordView(generics.CreateAPIView):
                         return Response(data={"error": "Otp not yet verified."}, status=status.HTTP_400_BAD_REQUEST)
 
                     # For later:
-                    # print(make_password(serializer.validated_data.get('password')), user.password)
-                    # if make_password(serializer.validated_data.get('password')) == user.password:
-                    #     return Response(data={"error": "The password is the same as the old one. Please try a different one for better security."}, status=status.HTTP_400_BAD_REQUEST)
+                    has_same_password = authenticate(request=request, email=serializer.validated_data.get('email'), password=serializer.validated_data.get('password'))
+                    if has_same_password:
+                        return Response(data={"error": "The password is simillar to the old one. Please try a different one for better security."}, status=status.HTTP_400_BAD_REQUEST)
                     
                     # If otp has expired sending an error:
                     if(user.otp_expiry and timezone.now() > user.otp_expiry):
@@ -307,7 +307,7 @@ class ChangePasswordView(generics.CreateAPIView):
         # Functionality if user has provided data in incorrect format.
         return Response(data={"error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
-@method_decorator(ratelimit(key='user', rate='20/hour', method='POST', block=True), name='dispatch')
+# @method_decorator(ratelimit(key='user', rate='20/hour', method='POST', block=True), name='dispatch')
 class EmployeeLoginView(generics.CreateAPIView):
     serializer_class = serializers.LoginSerializer
 
@@ -346,11 +346,11 @@ class EmployeeLoginView(generics.CreateAPIView):
 
                
                 
-            return Response(data={"message": "No active user exists with this email."}, status=status.HTTP_404_NOT_FOUND)
+            return Response(data={"error": "No active user exists with this email."}, status=status.HTTP_404_NOT_FOUND)
 
         return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-@method_decorator(ratelimit(key='user', rate='20/hour', method='POST', block=True), name='dispatch')
+# @method_decorator(ratelimit(key='user', rate='20/hour', method='POST', block=True), name='dispatch')
 class CompanyLoginView(generics.CreateAPIView):
     serializer_class = serializers.LoginSerializer
 
@@ -374,9 +374,9 @@ class CompanyLoginView(generics.CreateAPIView):
         #             }
         #             return Response(data=data, status=status.HTTP_200_OK)
 
-        #         return Response(data={"message": "Invalid Credentials provided."}, status=status.HTTP_200_OK)
+        #         return Response(data={"error": "Invalid Credentials provided."}, status=status.HTTP_200_OK)
             
-        #     return Response(data={"message": "User doesn't exist."}, status=status.HTTP_200_OK)
+        #     return Response(data={"error": "User doesn't exist."}, status=status.HTTP_200_OK)
         
         # return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -434,7 +434,7 @@ class CompanyLoginView(generics.CreateAPIView):
                 return Response(data={"error": "Invalid Credentials"}, status=status.HTTP_401_UNAUTHORIZED)
 
                 
-            return Response(data={"message": "No active user exists with this email."}, status=status.HTTP_404_NOT_FOUND)
+            return Response(data={"error": "No active user exists with this email."}, status=status.HTTP_404_NOT_FOUND)
 
         return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 

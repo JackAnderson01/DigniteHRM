@@ -62,7 +62,9 @@ MIDDLEWARE = [
 # Change it later to specific origins.
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_ALLOW_CREDENTIALS = True
-
+CSRF_TRUSTED_ORIGINS = [
+    'https://emerging-javelin-blindly.ngrok-free.app'
+]
 ROOT_URLCONF = 'DigniteHRM.urls'
 
 TEMPLATES = [
