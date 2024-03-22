@@ -317,6 +317,28 @@ class EmployeeLoginView(generics.CreateAPIView):
         serializer = self.serializer_class(data=data)
 
 
+
+        # Normal Scenario:
+        # if serializer.is_valid():
+        #     user = User.objects.filter(email=serializer.validated_data.get('email'))
+        #     if(user.exists()):
+        #         user = authenticate(request=request, email=serializer.validated_data.get('email'), password=serializer.validated_data.get('password'))
+        #         if(user):
+        #             refresh = RefreshToken.for_user(user)
+
+        #             data = {
+        #                 'refresh': str(refresh),
+        #                 'access': str(refresh.access_token)
+        #             }
+        #             return Response(data=data, status=status.HTTP_200_OK)
+
+        #         return Response(data={"error": "Invalid Credentials provided."}, status=status.HTTP_200_OK)
+            
+        #     return Response(data={"error": "User doesn't exist."}, status=status.HTTP_200_OK)
+        
+        # return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        
         # Our company oriented specific scenario:
         if serializer.is_valid():
             user = User.objects.filter(email=serializer.validated_data.get('email'), is_active=True)
@@ -341,7 +363,7 @@ class EmployeeLoginView(generics.CreateAPIView):
                 # If user is a company_owner.
                 if(company_owner.exists()):
                     return Response(data={
-                            "error": f"Company owners are not allowed to login using company panel."
+                            "error": f"Company owners are not allowed to login using employee panel."
                             }, status=status.HTTP_401_UNAUTHORIZED)
 
                
@@ -359,26 +381,6 @@ class CompanyLoginView(generics.CreateAPIView):
 
         serializer = self.serializer_class(data=data)
 
-
-        # Normal Scenario:
-        # if serializer.is_valid():
-        #     user = User.objects.filter(email=serializer.validated_data.get('email'))
-        #     if(user.exists()):
-        #         user = authenticate(request=request, email=serializer.validated_data.get('email'), password=serializer.validated_data.get('password'))
-        #         if(user):
-        #             refresh = RefreshToken.for_user(user)
-
-        #             data = {
-        #                 'refresh': str(refresh),
-        #                 'access': str(refresh.access_token)
-        #             }
-        #             return Response(data=data, status=status.HTTP_200_OK)
-
-        #         return Response(data={"error": "Invalid Credentials provided."}, status=status.HTTP_200_OK)
-            
-        #     return Response(data={"error": "User doesn't exist."}, status=status.HTTP_200_OK)
-        
-        # return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
         # Our company oriented specific scenario:
@@ -400,22 +402,34 @@ class CompanyLoginView(generics.CreateAPIView):
                     access_key_expiry = datetime.now() + timedelta(minutes=10)
                     email = serializer.validated_data.get('email')
                     name = company_owner.first().name
+                    id = company_owner.first().id
                     
                     valid_company_owner = authenticate(request=request, email=serializer.validated_data.get('email'), password=serializer.validated_data.get('password'))
+                    if (valid_company_owner and not company_owner.first().is_approved):
+                        refresh = RefreshToken.for_user(valid_company_owner)
+
+                        data = {
+                            'refresh': str(refresh),
+                            'access': str(refresh.access_token),
+                            'has_company': True,
+                            'is_approved': False,
+                            'company': company_owner.values()
+                        }
+                        return Response(data=data, status=status.HTTP_200_OK)
+
                     if(valid_company_owner):
-                        company_owner.update(access_key=access_key, access_key_expiry=access_key_expiry)
+                        company_owner.update(access_key=access_key, access_key_expiry=access_key_expiry, is_verified=False)
                         sendAccessKey(access_key, email,name)
 
                         return Response(data={
                             "has_company": True,
-                            "message": f"Access Key generated and sent to {email}."
+                            'is_approved': True,
+                            "message": f"Access Key generated and sent to {email}.",
+                            "id":id
                             }, status=status.HTTP_201_CREATED)
 
                     return Response(data={"error": "Invalid Credentials"}, status=status.HTTP_401_UNAUTHORIZED)
 
-                    
-
-                    
                 
 
                 # If user has not yet created a company and he is also not an employee.

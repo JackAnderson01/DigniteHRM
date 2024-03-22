@@ -6,7 +6,7 @@ from django.conf import settings
 class Company(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     owner = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='owned_companies')
-    name = models.CharField(max_length=255, unique=True)
+    name = models.CharField(max_length=255)
     address = models.CharField(max_length=255)
     phone_number = models.CharField(max_length=20)
     email = models.EmailField(null=False, blank=False)
@@ -20,7 +20,9 @@ class Company(models.Model):
     access_key_expiry = models.DateTimeField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    active = models.BooleanField(default=False)
+    is_verified = models.BooleanField(default=False)
+    is_approved = models.BooleanField(default=False)
+    active = models.BooleanField(default=True)
 
     
 

@@ -44,3 +44,14 @@ class CompanyCreationSerializer(serializers.ModelSerializer):
         
         
         return super().validate(data)
+    
+class CompanyVerifyAccessSerializer(serializers.ModelSerializer):
+    access_key=serializers.CharField()
+    id=serializers.UUIDField()
+
+    class Meta:
+        model = Company
+        fields = ["access_key", "id"]
+
+
+    
