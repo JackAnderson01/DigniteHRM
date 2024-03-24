@@ -25,6 +25,9 @@ urlpatterns = [
 
     # Company Urls
     path("company/", include('company.urls')),
+    # Vacancy Urls
+    path("vacancy/", include('vacancy.urls')),
+
 ]
 
 if settings.DEBUG:

@@ -2,6 +2,7 @@ from rest_framework import serializers
 from .models import Company
 
 class CompanyCreationSerializer(serializers.ModelSerializer):
+    owner = serializers.UUIDField()
     name = serializers.CharField(max_length=255),
     address = serializers.CharField(max_length=255),
     phone_number = serializers.CharField(max_length=20),
@@ -15,10 +16,14 @@ class CompanyCreationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Company
-        fields = ["name", "address", "phone_number", "email", "website", "industry", "founded_date","description", "logo", "banner"]
+        fields = ["owner", "name", "address", "phone_number", "email", "website", "industry", "founded_date","description", "logo", "banner"]
 
 
     def validate(self, data):
+        if 'owner' not in data:
+            raise serializers.ValidationError("Onwer must be provided.")
+        if data['owner'] == "":
+            raise serializers.ValidationError("Owner cannot be left empty.")
         if(data['name'] == ""):
             raise serializers.ValidationError("Company name cannot be left empty.")
         if(len(data['name']) < 5):

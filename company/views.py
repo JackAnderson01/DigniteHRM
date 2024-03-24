@@ -11,6 +11,8 @@ from django.db.utils import IntegrityError
 from datetime import datetime, timedelta
 from django.utils import timezone
 from rest_framework_simplejwt.tokens import RefreshToken
+from users.models import User
+from django.shortcuts import get_object_or_404
 
 
 # Create your views here.
@@ -58,26 +60,26 @@ class CompanyCreateView(CreateAPIView):
     def post(self, request):
         data = request.data
         serializer = self.serializer_class(data=request.data)
-        user = request.user
+        if serializer.is_valid():
+            user = get_object_or_404(User, id=serializer.validated_data.get('owner'))
 
-        is_user_employee = Employee.objects.filter(user=user)
-        if(is_user_employee.exists()):
-            return Response(data={"error": "Employee cannot register a company with his official email."}, status=status.HTTP_401_UNAUTHORIZED)
+            is_user_employee = Employee.objects.filter(user=user)
+            if(is_user_employee.exists()):
+                return Response(data={"error": "Employee cannot register a company with his official email."}, status=status.HTTP_401_UNAUTHORIZED)
 
         
-        if serializer.is_valid():
             try:
-                approved_company = Company.objects.filter(owner=request.user, is_approved=True)
-                unapproved_company = Company.objects.filter(owner=request.user, is_approved=False)
+                approved_company = Company.objects.filter(owner=user, is_approved=True)
+                unapproved_company = Company.objects.filter(owner=user, is_approved=False)
                 if(approved_company):
                     return Response({"error": "A company with this owner already exists."}, status=status.HTTP_400_BAD_REQUEST)
                 
                 if(unapproved_company):
                     return Response({"error": "Admin has not yet approved your company."}, status=status.HTTP_400_BAD_REQUEST)
                 
-                Company.objects.create(owner=request.user ,name = serializer.validated_data.get('name'), address = serializer.validated_data.get('address'), phone_number = serializer.validated_data.get('phone_number'), email = serializer.validated_data.get('email'), website = serializer.validated_data.get('website'), industry = serializer.validated_data.get('industry'), founded_date = serializer.validated_data.get('founded_date'), description = serializer.validated_data.get('description'), logo = serializer.validated_data.get('logo'), banner = serializer.validated_data.get('banner'), 
+                Company.objects.create(owner=user ,name=serializer.validated_data.get('name'), address = serializer.validated_data.get('address'), phone_number = serializer.validated_data.get('phone_number'), email = serializer.validated_data.get('email'), website = serializer.validated_data.get('website'), industry = serializer.validated_data.get('industry'), founded_date = serializer.validated_data.get('founded_date'), description = serializer.validated_data.get('description'), logo = serializer.validated_data.get('logo'), banner = serializer.validated_data.get('banner'), 
                             )
-                return Response(data={"data": serializer.validated_data}, status=status.HTTP_200_OK)
+                return Response(data={"message":"Company created successfully.","data": serializer.validated_data}, status=status.HTTP_200_OK)
             except IntegrityError as e:
                 # Check if the error is due to a UNIQUE constraint violation
                 if 'UNIQUE constraint' in str(e):
