@@ -14,7 +14,6 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 
 # Create your views here.
-
 class CompanyVerifyAccessKeyView(APIView):
     
 
@@ -51,8 +50,6 @@ class CompanyVerifyAccessKeyView(APIView):
             refresh = RefreshToken.for_user(company.first().owner)
             return Response(data={"message": "Access Key Verified.", "name":company.first().name, 'refresh': str(refresh), 'access': str(refresh.access_token), 'logo': f"{company.first().logo}" }, status=status.HTTP_200_OK)
         return Response(data={"error": "Invalid Access Key"}, status=status.HTTP_401_UNAUTHORIZED)
-
-        
 
 class CompanyCreateView(CreateAPIView):
     serializer_class = serializers.CompanyCreationSerializer
@@ -94,5 +91,3 @@ class CompanyCreateView(CreateAPIView):
             
 
         return Response(data={"error" :serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
-
-    

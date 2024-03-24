@@ -35,7 +35,7 @@ LOCAL_APPS = [
     'employee.apps.EmployeeConfig',
     'permissions.apps.PermissionsConfig',
     'vacancy.apps.VacancyConfig',
-    'applications.apps.ApplicationsConfig'
+    'candidates.apps.CandidatesConfig'
 ]
 
 LIBRARIES = [
